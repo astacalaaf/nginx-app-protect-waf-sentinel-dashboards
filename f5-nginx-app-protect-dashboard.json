@@ -1,0 +1,551 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# F5 NGINX App Protect Dashboard"
+      },
+      "name": "Dashboard Title"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "bf1e79ab-c373-4eb5-b22e-ed58a755df56",
+            "version": "KqlParameterItem/1.0",
+            "name": "LogDataTimeRange",
+            "label": "Time",
+            "type": 4,
+            "description": "Choose Time Range",
+            "isRequired": true,
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 2592000000
+                }
+              ],
+              "allowCustom": false
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "value": {
+              "durationMs": 86400000
+            }
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "Time Range Param"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Request Rate",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend RequestStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1])\r\n| summarize Request = count() by RequestStatus\r\n| render piechart with(title=\"Request Rate\")",
+              "size": 4,
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "chartSettings": {
+                "showMetrics": false,
+                "showLegend": true,
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "blocked",
+                    "color": "red"
+                  },
+                  {
+                    "seriesName": "alerted",
+                    "color": "orange"
+                  },
+                  {
+                    "seriesName": "passed",
+                    "color": "green"
+                  }
+                ]
+              }
+            },
+            "customWidth": "25",
+            "name": "Request Rate Pie Chart"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let interval = {LogDataTimeRange:grain};\r\nlet stime = {LogDataTimeRange:start};\r\nlet etime = {LogDataTimeRange:end};\r\nNGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend RequestStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1])\r\n| make-series count() default=0 on TimeGenerated from stime to etime step interval by RequestStatus",
+              "size": 1,
+              "timeContextFromParameter": "LogDataTimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "timechart",
+              "chartSettings": {
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "blocked",
+                    "color": "red"
+                  },
+                  {
+                    "seriesName": "alerted",
+                    "color": "orange"
+                  },
+                  {
+                    "seriesName": "passed",
+                    "color": "green"
+                  }
+                ]
+              }
+            },
+            "customWidth": "75",
+            "name": "Request Rate Metrics"
+          }
+        ]
+      },
+      "name": "Request Rate",
+      "styleSettings": {
+        "showBorder": true
+      }
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Response Rate",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend ResponseStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[10])))), '\"')[1])\r\n| summarize Response = count() by ResponseStatus\r\n| render piechart with(title=\"Request Rate\")",
+              "size": 4,
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "chartSettings": {
+                "showMetrics": false,
+                "showLegend": true,
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "0",
+                    "label": "Blocked",
+                    "color": "red"
+                  }
+                ]
+              }
+            },
+            "customWidth": "25",
+            "name": "Response Rate Pie Chart"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let interval = {LogDataTimeRange:grain};\r\nlet stime = {LogDataTimeRange:start};\r\nlet etime = {LogDataTimeRange:end};\r\nNGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend ResponseStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[10])))), '\"')[1])\r\n| make-series count() default=0 on TimeGenerated from stime to etime step interval by ResponseStatus",
+              "size": 1,
+              "timeContextFromParameter": "LogDataTimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "timechart",
+              "chartSettings": {
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "0",
+                    "label": "Blocked",
+                    "color": "red"
+                  }
+                ]
+              }
+            },
+            "customWidth": "75",
+            "name": "Response Rate Metrics"
+          }
+        ]
+      },
+      "name": "Response Rate",
+      "styleSettings": {
+        "showBorder": true
+      }
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend SrcIpAddr = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[11])))), '\"')[1])\r\n| summarize event_count=count() by SrcIpAddr\r\n| sort by event_count desc\r\n| project SrcIpAddr, event_count\r\n| render barchart",
+              "size": 1,
+              "title": "Top 10 Source IP Address",
+              "timeContextFromParameter": "LogDataTimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "barchart",
+              "chartSettings": {
+                "showMetrics": false
+              }
+            },
+            "customWidth": "50",
+            "name": "Top 10 Source IP Address"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend URI = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[47])))), '\"')[1])\r\n| summarize event_count=count() by URI\r\n| sort by event_count desc\r\n| project URI, event_count\r\n| render barchart",
+              "size": 1,
+              "title": "Top 10 URI",
+              "timeContextFromParameter": "LogDataTimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "chartSettings": {
+                "createOtherGroup": 10,
+                "showMetrics": false
+              }
+            },
+            "customWidth": "50",
+            "name": "Top 10 URI"
+          }
+        ]
+      },
+      "name": "Top 10 Highlight",
+      "styleSettings": {
+        "showBorder": true
+      }
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend SrcIpAddr = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[11])))), '\"')[1])\r\n| extend RequestStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1])\r\n| where RequestStatus != \"passed\" \r\n| summarize count() by SrcIpAddr\r\n| render piechart with(title=\"Attack by Source IP Address\")",
+              "size": 1,
+              "title": "Violation by Source IP",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "piechart",
+              "chartSettings": {
+                "showMetrics": false,
+                "showLegend": true
+              }
+            },
+            "customWidth": "33",
+            "name": "Violation by Source IP"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend RequestStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1])\r\n| where RequestStatus != \"passed\" \r\n| extend ViolationsGroup = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[7])))), '\"')[1]\r\n| extend Violations = split(ViolationsGroup, \";\")\r\n| mvexpand Violations to typeof(string)\r\n| summarize count() by Violations\r\n| render piechart with(title=\"Violation Distribution\")",
+              "size": 1,
+              "title": "Violation Distribution",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "chartSettings": {
+                "showMetrics": false,
+                "showLegend": true,
+                "ySettings": {
+                  "numberFormatSettings": {
+                    "unit": 0,
+                    "options": {
+                      "style": "decimal",
+                      "useGrouping": true
+                    }
+                  }
+                }
+              }
+            },
+            "customWidth": "33",
+            "name": "Violation Distribution"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend RequestStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1])\r\n| where RequestStatus != \"passed\"\r\n| extend SignatureIdGroup = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[18])))), '\"')[1]\r\n| where SignatureIdGroup != \"N/A\"\r\n| extend SignaturesId = split(SignatureIdGroup, \";\")\r\n| mvexpand SignaturesId to typeof(string)\r\n| summarize count() by SignaturesId\r\n| render piechart with(title=\"Signature Name Distribution\")",
+              "size": 1,
+              "title": "Signature Distribution",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "chartSettings": {
+                "showMetrics": false,
+                "showLegend": true
+              }
+            },
+            "customWidth": "33",
+            "name": "Signature Distribution"
+          }
+        ]
+      },
+      "name": "Violations",
+      "styleSettings": {
+        "showBorder": true
+      }
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "NGINX App Protect WAF Illegal Log",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| sort by TimeGenerated desc\r\n| extend EventData = split(RawData, \",\")\r\n| extend RequestStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1])\r\n| where RequestStatus != \"passed\" \r\n| extend Violations = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[7])))), '\"')[1]\r\n| extend SupportId = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[8])))), '\"')[1]\r\n| extend RequestStatus = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1]\r\n| extend SrcIpAddr = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[11])))), '\"')[1])\r\n| extend Payload = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[49])))), '\"')[1])\r\n| project TimeGenerated, Computer, SupportId, RequestStatus, SrcIpAddr, Violations, Payload",
+              "size": 1,
+              "timeContextFromParameter": "LogDataTimeRange",
+              "showRefreshButton": true,
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "TimeGenerated",
+                    "label": "Time"
+                  },
+                  {
+                    "columnId": "Computer",
+                    "label": "Instance Name"
+                  },
+                  {
+                    "columnId": "SupportId",
+                    "label": "Support ID"
+                  },
+                  {
+                    "columnId": "RequestStatus",
+                    "label": "Request Status"
+                  },
+                  {
+                    "columnId": "SrcIpAddr",
+                    "label": "Source IP"
+                  },
+                  {
+                    "columnId": "Violations",
+                    "label": "Violations"
+                  }
+                ]
+              }
+            },
+            "name": "Table Data"
+          }
+        ]
+      },
+      "name": "Illegal Log Data",
+      "styleSettings": {
+        "showBorder": true
+      }
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## False Positive Dashboard\r\n---\r\n### Interpretation\r\nGraphs below display total number of unique IPs hitting particular signature or violation at a moment of time. A spike on any of them means that lots of clients trigger the same rule which likely means policy misconfiguration which causes false positives.\r\n\r\n**NORMAL: Low and steady**\r\n\r\n**ABNORMAL: High or Spikes**\r\n#### What to do if you suspect false positives?\r\nIdentify top signatures or/and violations from graphs and adjust policy configuration to make them fire on suspicious events only.\r\n\r\n"
+            },
+            "name": "text - 2"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let interval = {LogDataTimeRange:grain};\r\nlet stime = {LogDataTimeRange:start};\r\nlet etime = {LogDataTimeRange:end};\r\nNGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend RequestStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1])\r\n| where RequestStatus != \"passed\"\r\n| extend ViolationsGroup = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[7])))), '\"')[1]\r\n| extend Violations = split(ViolationsGroup, \";\")\r\n| mvexpand Violations to typeof(string)\r\n| extend SrcIpAddr = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[11])))), '\"')[1])\r\n| make-series dcount(SrcIpAddr) default=0 on TimeGenerated from stime to etime step interval by Violations",
+              "size": 0,
+              "aggregation": 2,
+              "title": "Rate of Unique IPs per Violation",
+              "timeContextFromParameter": "LogDataTimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "timechart",
+              "chartSettings": {
+                "createOtherGroup": 5,
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "0",
+                    "label": "Blocked",
+                    "color": "red"
+                  }
+                ]
+              }
+            },
+            "name": "Rate of Unique IPs per Violation"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend RequestStatus = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1]\r\n| where RequestStatus != \"passed\"\r\n| extend SrcIpAddr = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[11])))), '\"')[1]\r\n| extend ViolationsGroup = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[7])))), '\"')[1]\r\n| extend Violations = split(ViolationsGroup, \";\")\r\n| mvexpand Violations to typeof(string), SrcIpAddr to typeof(string)\r\n| summarize makeset(RequestStatus), UniqueIpsCount=dcount(SrcIpAddr), TotalHitCount=count()  by Violations\r\n| sort by TotalHitCount desc",
+              "size": 0,
+              "aggregation": 2,
+              "title": "Violations State Table",
+              "timeContextFromParameter": "LogDataTimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "labelSettings": [
+                  {
+                    "columnId": "set_RequestStatus",
+                    "label": "Request Status"
+                  },
+                  {
+                    "columnId": "UniqueIpsCount",
+                    "label": "Unique IPs Count"
+                  },
+                  {
+                    "columnId": "TotalHitCount",
+                    "label": "Total Hit Count"
+                  }
+                ]
+              },
+              "chartSettings": {
+                "createOtherGroup": 5,
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "0",
+                    "label": "Blocked",
+                    "color": "red"
+                  }
+                ]
+              }
+            },
+            "name": "Violations State Table"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let interval = {LogDataTimeRange:grain};\r\nlet stime = {LogDataTimeRange:start};\r\nlet etime = {LogDataTimeRange:end};\r\nNGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend RequestStatus = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1])\r\n| where RequestStatus != \"passed\"\r\n| extend SignatureIdGroup = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[17])))), '\"')[1]\r\n| where SignatureIdGroup != \"N/A\"\r\n| extend SignatureId = split(SignatureIdGroup, \";\")\r\n| mvexpand SignatureId to typeof(string)\r\n| extend SrcIpAddr = tostring(split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[11])))), '\"')[1])\r\n| make-series dcount(SrcIpAddr) default=0 on TimeGenerated from stime to etime step interval by SignatureId",
+              "size": 0,
+              "aggregation": 2,
+              "title": "Rate of Unique IPs per Signature",
+              "timeContextFromParameter": "LogDataTimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "timechart",
+              "chartSettings": {
+                "createOtherGroup": 5,
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "0",
+                    "label": "Blocked",
+                    "color": "red"
+                  }
+                ]
+              }
+            },
+            "name": "Rate of Unique IPs per Signature"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "NGINX_NAP_CL\r\n| where TimeGenerated {LogDataTimeRange}\r\n| where RawData contains \"unit_hostname\"\r\n| extend EventData = split(RawData, \",\")\r\n| extend RequestStatus = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[9])))), '\"')[1]\r\n| where RequestStatus != \"passed\"\r\n| extend SrcIpAddr = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[11])))), '\"')[1]\r\n| extend SignatureIdGroup = split(trim_start(@'\"', (trim_end(@'\"', tostring(EventData[17])))), '\"')[1]\r\n| where SignatureIdGroup != \"N/A\"\r\n| extend SignatureId = split(SignatureIdGroup, \";\")\r\n| mvexpand SignatureId to typeof(string), SrcIpAddr to typeof(string)\r\n| summarize makeset(RequestStatus), UniqueIpsCount=dcount(SrcIpAddr), TotalHitCount=count() by SignatureId\r\n| sort by TotalHitCount desc",
+              "size": 0,
+              "aggregation": 2,
+              "title": "Signature State Table",
+              "timeContextFromParameter": "LogDataTimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "labelSettings": [
+                  {
+                    "columnId": "set_RequestStatus",
+                    "label": "Request Status"
+                  },
+                  {
+                    "columnId": "UniqueIpsCount",
+                    "label": "Unique IPs Count"
+                  },
+                  {
+                    "columnId": "TotalHitCount",
+                    "label": "Total Hit Count"
+                  }
+                ]
+              },
+              "chartSettings": {
+                "createOtherGroup": 5,
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "0",
+                    "label": "Blocked",
+                    "color": "red"
+                  }
+                ]
+              }
+            },
+            "name": "Signature State Table"
+          }
+        ]
+      },
+      "name": "False Positive Dashboard",
+      "styleSettings": {
+        "showBorder": true
+      }
+    }
+  ],
+  "fallbackResourceIds": [
+    "/subscriptions/7faffcfe-44ff-423a-abdc-2864c82e6a24/resourcegroups/azure-rg/providers/microsoft.operationalinsights/workspaces/sentinel-poc"
+  ],
+  "fromTemplateId": "sentinel-UserWorkbook",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
